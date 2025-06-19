@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Auto Consolidator
 
 A powerful Excel consolidation tool that automatically links data from multiple estimate files into a single consolidated spreadsheet with live formulas.
