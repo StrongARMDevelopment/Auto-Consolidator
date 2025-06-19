@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Auto Consolidator
 
 A powerful Excel consolidation tool that automatically links data from multiple estimate files into a single consolidated spreadsheet with live formulas.
@@ -20,7 +19,7 @@ A powerful Excel consolidation tool that automatically links data from multiple 
 
 ## Screenshot
 
-![Auto Consolidator Interface](docs/screenshot.png)
+![Auto Consolidator Interface](![image](https://github.com/user-attachments/assets/142ad51f-d554-472a-9985-03bc359e7c23))
 *Modern, user-friendly interface for Excel consolidation*
 
 ## Quick Start
@@ -37,7 +36,7 @@ A powerful Excel consolidation tool that automatically links data from multiple 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/auto-consolidator.git
+git clone https://github.com/StrongARMDevelopment/auto-consolidator.git
 cd auto-consolidator
 
 # Install dependencies
