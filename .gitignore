@@ -30,6 +30,8 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+# But keep our main spec file for custom builds
+!Auto_Consolidator.spec
 
 # Installer logs
 pip-log.txt
@@ -118,6 +120,7 @@ consolidator_errors.log
 *.tmp
 temp/
 Auto_Consolidator_Package/
-auto_consolidator.ico
+# Custom icon for the application
+!auto_consolidator.ico
 *.png
 docs/

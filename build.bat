@@ -19,7 +19,15 @@ if exist "build" rmdir /s /q "build"
 
 REM Build executable
 echo Creating executable...
-pyinstaller --onefile --windowed --name "Auto_Consolidator" auto_consolidator.py
+REM Check if icon file exists and use appropriate build method
+if exist "auto_consolidator.ico" (
+    echo Using custom icon: auto_consolidator.ico
+    pyinstaller Auto_Consolidator.spec
+) else (
+    echo No icon file found. Building without custom icon...
+    echo See icon_instructions.txt for how to add a custom icon.
+    pyinstaller --onefile --windowed --name "Auto_Consolidator" auto_consolidator.py
+)
 
 if exist "dist\Auto_Consolidator.exe" (
     echo.

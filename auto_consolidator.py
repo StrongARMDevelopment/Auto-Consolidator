@@ -1,7 +1,6 @@
 import os
 import sys
 import traceback
-import pandas as pd
 from openpyxl import load_workbook, Workbook
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk, scrolledtext, font as tkFont
@@ -12,7 +11,185 @@ import threading
 from ttkthemes import ThemedTk
 from dataclasses import dataclass
 from contextlib import contextmanager
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, Union
+
+# --- Lightweight DataFrame Replacement ---
+class CellMapData:
+    """
+    Lightweight replacement for pandas DataFrame specifically for Cell Map data.
+    Provides the minimal interface needed by the consolidator application.
+    Uses only built-in Python types and openpyxl for maximum efficiency.
+    """
+    
+    def __init__(self, data: List[List], columns: List[str]):
+        """
+        Initialize with data and column names.
+        
+        Args:
+            data: List of rows, where each row is a list of values
+            columns: List of column names
+        """
+        if not columns:
+            raise ValueError("Columns cannot be empty")
+        if data and len(data[0]) != len(columns):
+            raise ValueError("Number of columns must match data width")
+            
+        self._data = data
+        self._columns = columns
+        self._column_indices = {col: idx for idx, col in enumerate(columns)}
+    
+    @property
+    def columns(self) -> List[str]:
+        """Return list of column names"""
+        return self._columns.copy()
+    
+    def __len__(self) -> int:
+        """Return number of rows"""
+        return len(self._data)
+    
+    def __getitem__(self, column_name: str) -> List:
+        """Get column data by name"""
+        if column_name not in self._column_indices:
+            raise KeyError(f"Column '{column_name}' not found")
+        col_idx = self._column_indices[column_name]
+        return [row[col_idx] for row in self._data]
+    
+    def iterrows(self):
+        """
+        Iterate over rows, yielding (index, row_data) tuples.
+        row_data is a dict-like object that supports column access.
+        """
+        for idx, row in enumerate(self._data):
+            row_dict = CellMapRow(dict(zip(self._columns, row)))
+            yield idx, row_dict
+    
+    def isnull(self):
+        """Return a CellMapData with boolean values indicating null/empty values"""
+        null_data = []
+        for row in self._data:
+            null_row = [val is None or (isinstance(val, str) and val.strip() == "") for val in row]
+            null_data.append(null_row)
+        return CellMapData(null_data, self._columns)
+    
+    def duplicated(self, subset: Optional[List[str]] = None):
+        """Return a CellMapData with boolean values indicating duplicate rows"""
+        if subset is None:
+            subset = self._columns
+        
+        # Get indices for subset columns
+        subset_indices = [self._column_indices[col] for col in subset if col in self._column_indices]
+        
+        seen_rows = set()
+        duplicate_flags = []
+        
+        for row in self._data:
+            # Create tuple of subset values for comparison
+            subset_tuple = tuple(row[idx] for idx in subset_indices)
+            is_duplicate = subset_tuple in seen_rows
+            duplicate_flags.append([is_duplicate])  # Single column result
+            seen_rows.add(subset_tuple)
+        
+        return CellMapData(duplicate_flags, ["is_duplicate"])
+
+class CellMapRow:
+    """
+    Dictionary-like object to represent a row from CellMapData.
+    Supports both dict-style and attribute-style access.
+    """
+    
+    def __init__(self, data: dict):
+        self._data = data
+    
+    def __getitem__(self, key: str):
+        """Dictionary-style access: row["column_name"]"""
+        return self._data[key]
+    
+    def __contains__(self, key: str) -> bool:
+        """Support 'in' operator"""
+        return key in self._data
+    
+    def get(self, key: str, default=None):
+        """Dict-style get method"""
+        return self._data.get(key, default)
+
+def read_excel_to_cellmapdata(file_path: str, sheet_name: Optional[str] = None) -> CellMapData:
+    """
+    Read an Excel file using openpyxl and return a CellMapData instance.
+    
+    Args:
+        file_path: Path to the Excel file
+        sheet_name: Name of the sheet to read (if None, uses active sheet)
+    
+    Returns:
+        CellMapData instance containing the Excel data
+    
+    Raises:
+        ValueError: If the file cannot be read or has no data
+    """
+    try:
+        # Open the workbook
+        wb = load_workbook(file_path, read_only=True, data_only=True)
+          # Select the worksheet
+        if sheet_name:
+            if sheet_name not in wb.sheetnames:
+                raise ValueError(f"Sheet '{sheet_name}' not found in workbook")
+            ws = wb[sheet_name]
+        else:
+            ws = wb.active
+        
+        # Ensure we have a valid worksheet
+        if ws is None:
+            raise ValueError("No active worksheet found in workbook")
+        
+        # Read all data from the worksheet
+        data = []
+        columns = []
+        
+        # Get the data range (skip empty rows/columns)
+        if ws.max_row == 1 and ws.max_column == 1:
+            # Check if the single cell is empty
+            cell_value = ws.cell(1, 1).value
+            if cell_value is None or str(cell_value).strip() == "":
+                raise ValueError("Excel sheet appears to be empty")
+        
+        # Read header row (first row)
+        first_row = True
+        for row in ws.iter_rows(values_only=True):
+            # Skip completely empty rows
+            if not any(cell is not None and str(cell).strip() for cell in row):
+                continue
+                
+            if first_row:
+                # First non-empty row becomes the header
+                columns = [str(cell).strip() if cell is not None else f"Column_{i}" 
+                          for i, cell in enumerate(row)]
+                first_row = False
+            else:
+                # Convert None values to empty strings and ensure consistent row length
+                row_data = []
+                for i, cell in enumerate(row):
+                    if i >= len(columns):
+                        break  # Don't exceed column count
+                    if cell is None:
+                        row_data.append("")
+                    else:
+                        row_data.append(str(cell).strip() if isinstance(cell, str) else cell)
+                
+                # Pad row to match column count if necessary
+                while len(row_data) < len(columns):
+                    row_data.append("")
+                
+                data.append(row_data)
+        
+        wb.close()
+        
+        if not columns:
+            raise ValueError("No valid header row found in Excel file")
+        
+        return CellMapData(data, columns)
+        
+    except Exception as e:
+        raise ValueError(f"Failed to read Excel file '{file_path}': {str(e)}")
 
 # --- Configuration and Setup ---
 @dataclass
@@ -102,8 +279,7 @@ class ExcelConsolidator:
         ]
 
         try:
-            with open_workbook(self.cell_map_path, read_only=True, data_only=True) as wb:
-                df = pd.read_excel(self.cell_map_path)
+            df = read_excel_to_cellmapdata(str(self.cell_map_path))
         except Exception as e:
             raise ValueError(f"Failed to read Cell Map file: {e}")
 
@@ -111,10 +287,16 @@ class ExcelConsolidator:
         if missing_cols:
             raise ValueError(f"Cell Map is missing required columns: {', '.join(missing_cols)}")
 
-        if df.isnull().values.any():
+        # Check for null/empty values using our CellMapData interface
+        null_check = df.isnull()
+        has_nulls = any(any(row) for row in null_check._data)
+        if has_nulls:
             raise ValueError("Cell Map contains empty cells. Please fill all values.")
         
-        if df.duplicated(subset=required_columns).any():
+        # Check for duplicates using our CellMapData interface
+        dup_check = df.duplicated(subset=required_columns)
+        has_duplicates = any(row[0] for row in dup_check._data)
+        if has_duplicates:
             raise ValueError("Cell Map contains duplicate mappings. Please remove them.")
 
         self.cell_map_df = df

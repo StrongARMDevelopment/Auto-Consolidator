@@ -53,11 +53,12 @@ python auto_consolidator.py
 
 The application requires the following Python packages:
 
-- `pandas` - Data manipulation and analysis
-- `openpyxl` - Excel file handling
+- `openpyxl` - Excel file handling and data processing
 - `tkinter` - GUI framework (included with Python)
 - `ttkthemes` - Modern GUI themes
 - `Pillow` - Image processing for icons
+
+**Note**: This application uses a lightweight custom implementation for Excel data processing, eliminating the need for pandas and reducing executable size by ~50MB.
 
 Install all dependencies with:
 ```bash
@@ -209,8 +210,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Built with Python and tkinter
-- Uses openpyxl for Excel file handling
-- Pandas for data manipulation
+- Uses openpyxl for Excel file handling  
+- Custom lightweight data processing implementation
 - PyInstaller for executable creation
 
 ---
