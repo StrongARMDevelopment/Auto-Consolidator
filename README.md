@@ -17,11 +17,6 @@ A powerful Excel consolidation tool that automatically links data from multiple 
 - **Error Handling**: Comprehensive validation and error reporting
 - **Executable Distribution**: Standalone .exe file for easy deployment
 
-## Screenshot
-
-![Auto Consolidator Interface](![image](https://github.com/user-attachments/assets/142ad51f-d554-472a-9985-03bc359e7c23))
-*Modern, user-friendly interface for Excel consolidation*
-
 ## Quick Start
 
 ### For End Users (Executable)
