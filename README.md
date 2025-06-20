@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Auto Consolidator
 
 A powerful Excel consolidation tool that automatically links data from multiple estimate files into a single consolidated spreadsheet with live formulas.
@@ -18,17 +17,12 @@ A powerful Excel consolidation tool that automatically links data from multiple 
 - **Error Handling**: Comprehensive validation and error reporting
 - **Executable Distribution**: Standalone .exe file for easy deployment
 
-## Screenshot
-
-![Auto Consolidator Interface](docs/screenshot.png)
-*Modern, user-friendly interface for Excel consolidation*
-
 ## Quick Start
 
 ### For End Users (Executable)
 
 1. Download the latest release from the [Releases](../../releases) page
-2. Extract the `Auto_Consolidator_Package` folder
+2. Extract the package folder
 3. Double-click `Auto_Consolidator.exe` to run
 4. Configure your `Cell Map.xlsx` file
 5. Select files and run consolidation
@@ -37,7 +31,7 @@ A powerful Excel consolidation tool that automatically links data from multiple 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/auto-consolidator.git
+git clone https://github.com/StrongARMDevelopment/auto-consolidator.git
 cd auto-consolidator
 
 # Install dependencies
@@ -110,28 +104,24 @@ To create a standalone executable:
 # Quick build
 build.bat
 
-# Or manual build
-python build_executable.py
+# Or manual build with PyInstaller
+pyinstaller --onefile --windowed --name "Auto_Consolidator" auto_consolidator.py
 ```
 
-The executable and distribution package will be created in the `Auto_Consolidator_Package` folder.
+The executable will be created in the `dist` folder.
 
 ## Project Structure
 
 ```
 auto-consolidator/
 ├── auto_consolidator.py       # Main application
-├── build_executable.py        # Build script for executable
-├── auto_consolidator.spec     # PyInstaller configuration
 ├── requirements.txt           # Python dependencies
 ├── build.bat                  # Quick build script
 ├── Cell Map.xlsx             # Template mapping file
-├── DEPLOYMENT_GUIDE.md       # Deployment instructions
 ├── README.md                 # This file
 ├── LICENSE                   # Project license
 ├── .gitignore               # Git ignore rules
-└── docs/                    # Documentation
-    └── screenshot.png       # Application screenshot
+└── consolidator_errors.log  # Application error log (created at runtime)
 ```
 
 ## Configuration
